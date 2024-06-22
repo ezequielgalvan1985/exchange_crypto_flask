@@ -1,0 +1,6 @@
+Apuntes:
+flask db init
+flask db migrate -m "inicio"
+flask db upgrade
+
+
