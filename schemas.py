@@ -50,4 +50,12 @@ class WalletContractSchema(ma.Schema):
     reserved     = fields.Boolean()
 
 
+class WalletSchema(ma.Schema):
+    id              = fields.Integer(dump_only=False)
+    address         = fields.String()
+    chain_id        = fields.Integer()
+    balance         = fields.Integer()
+    coin            = fields.String()
+    transactions    = fields.String()
+    wallet_contract = ma.Nested(WalletContractSchema, many=False)
 

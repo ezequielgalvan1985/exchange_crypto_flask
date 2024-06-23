@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
 from models import User, RolPermiso, UserProfile
 from db import db
-from resources import walletcontract_blueprint
+from resources import wallet_bp, walletcontract_bp
 from schemas import UserSchemaDto, RolPermisoSchema, UserSchema, UserProfileSchema
 from flask import Flask
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, current_user, \
@@ -154,7 +154,8 @@ app.url_map.strict_slashes = False
 
 
 # Registra los blueprints
-app.register_blueprint(walletcontract_blueprint)
+app.register_blueprint(walletcontract_bp)
+app.register_blueprint(wallet_bp)
 
 #Workers
 
