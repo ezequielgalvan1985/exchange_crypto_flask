@@ -59,3 +59,8 @@ class WalletSchema(ma.Schema):
     transactions    = fields.String()
     wallet_contract = ma.Nested(WalletContractSchema, many=False)
 
+class WalletCreateDtoSchema(ma.Schema):
+    user_id         = fields.String()
+    chain_id        = fields.String()
+    coin            = fields.String()
+

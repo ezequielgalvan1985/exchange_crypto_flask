@@ -4,6 +4,8 @@ from flask_restful import Api, abort
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
+
+from extensiones import ma, migrate
 from models import User, RolPermiso, UserProfile
 from db import db
 from resources import wallet_bp, walletcontract_bp
@@ -136,18 +138,16 @@ def datospersonalesFindByUserId(id):
     resp = userprofile_serializer.dump(r, many=False)
     return resp, 200
 
-ma = Marshmallow()
-migrate = Migrate()
-
-db.init_app(app)
-ma.init_app(app)
-migrate.init_app(app, db)
-
 user_dto_serializer = UserSchemaDto()
 
 
 # Captura todos los errores 404
 Api(app, catch_all_404s=True)
+
+db.init_app(app)
+ma.init_app(app)
+migrate.init_app(app, db)
+
 
 # Deshabilita el modo estricto de acabado de una URL con /
 app.url_map.strict_slashes = False
