@@ -64,3 +64,9 @@ class WalletCreateDtoSchema(ma.Schema):
     chain_id        = fields.String()
     coin            = fields.String()
 
+class WalletWithdrawDtoSchema(ma.Schema):
+    coin = fields.String()
+    amount = fields.Float()
+    to = fields.String()
+
+

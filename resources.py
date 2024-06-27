@@ -1,16 +1,17 @@
 from flask import request, Blueprint, abort, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restful import Api, Resource
-from schemas import WalletContractSchema, WalletSchema, WalletCreateDtoSchema
+from schemas import WalletContractSchema, WalletSchema, WalletCreateDtoSchema, WalletWithdrawDtoSchema
 from models import Wallet, Permiso, WalletContract
 from db import db
+from services import WalletService
 
 #serializers
 walletcontract_serializer = WalletContractSchema()
 wallet_serializer = WalletSchema()
 
-walletcontract_bp = Blueprint('walletcontract_blueprint', __name__)
-api = Api(walletcontract_bp)
+controllers_blueprint = Blueprint('controllers_blueprint', __name__)
+api = Api(controllers_blueprint)
 
 class WalletContractListResource(Resource):
     def get(self):
@@ -69,8 +70,6 @@ api.add_resource(WalletContractResource, '/app-core/v1/wallet-contract/<int:id>'
 #
 #WALLET RESOURCE
 #
-wallet_bp = Blueprint('wallet_blueprint', __name__)
-api = Api(wallet_bp)
 
 class WalletListResource(Resource):
     _serializer= None
@@ -154,6 +153,24 @@ class WalletResource(Resource):
         resp = walletcontract_serializer.dump(r)
         return {"message": "Actualizado Ok", "data": resp}, 200
 
-
 api.add_resource(WalletListResource, '/app-core/v1/wallets',endpoint='wallets_list_resource')
 api.add_resource(WalletResource, '/app-core/v1/wallets/<int:id>', endpoint='wallets_resource')
+
+#-----------------------------
+#Otras funciones
+#-----------------------------
+
+class WalletWithdraw(Resource):
+    def __init__(self):
+        self._serializer = WalletWithdrawDtoSchema()
+    def post(self):
+        try:
+            data = request.get_json()
+            record_dict = self._serializer.load(data)
+            s = WalletService()
+            s.send_withdraw_queue(data)
+            return data, 200
+        except Exception as e:
+            return {"message": e}, 500
+
+api.add_resource(WalletWithdraw, '/app-core/v1/wallets/withdraw', endpoint='wallets_withdraw_resource')
