@@ -44,9 +44,9 @@ class RolPermisoSchema(ma.Schema):
 
 
 class WalletContractSchema(ma.Schema):
-    id           = fields.Integer(dump_only=False)
+    #id           = fields.Integer(dump_only=False)
     address      = fields.String()
-    chain_id     = fields.Integer()
+    chain_id     = fields.String()
     reserved     = fields.Boolean()
 
 

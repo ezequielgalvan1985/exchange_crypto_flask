@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from db import db, BaseModelMixin,Mapped, mapped_column
-
+from datetime import date
 
 #Modelos
 class User(db.Model, BaseModelMixin):
@@ -120,12 +120,13 @@ class Transaction(db.Model,BaseModelMixin):
     id         = db.Column(Integer, primary_key=True)
     nature     = db.Column(db.Integer(),nullable=False)
     tx_hash    = db.Column(db.String(50),nullable=False)
-    amount     = db.Column(db.Float(),nullable=False)
-    to         = db.Column(db.String(50),nullable=False)
-    confirmations = db.Column(db.Integer(),nullable=False)
-    status = db.Column(db.Integer(),nullable=False)
+    amount     = db.Column(db.Float(),nullable=True)
+    to         = db.Column(db.String(50),nullable=True)
+    confirmations = db.Column(db.Integer(),nullable=True)
+    status = db.Column(db.Integer(),nullable=True)
     wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'))
     wallet = db.relationship("Wallet")
+    created_at = db.Column(db.Date, nullable=False)
 
     def __str__(self):
         return self.tx_hash

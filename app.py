@@ -1,21 +1,18 @@
 from datetime import timedelta
+from celery import Celery
 from flask import request, jsonify
 from flask_restful import Api, abort
-from flask_marshmallow import Marshmallow
-from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-
 from extensiones import ma, migrate
 from models import User, RolPermiso, UserProfile
 from db import db
 from resources import  controllers_blueprint
 from schemas import UserSchemaDto, RolPermisoSchema, UserSchema, UserProfileSchema
 from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, current_user, \
-    get_jwt, create_refresh_token
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, get_jwt, create_refresh_token
 from flask_jwt_extended import jwt_required
 from flask_cors import CORS, cross_origin
-
+from celery.utils.log import get_task_logger
 
 user_serializer = UserSchema()
 userprofile_serializer = UserProfileSchema()
@@ -141,6 +138,7 @@ def datospersonalesFindByUserId(id):
 user_dto_serializer = UserSchemaDto()
 
 
+
 # Captura todos los errores 404
 Api(app, catch_all_404s=True)
 
@@ -155,8 +153,11 @@ app.url_map.strict_slashes = False
 
 # Registra los blueprints
 app.register_blueprint(controllers_blueprint)
-#Workers
+
+
+
+
 
 if __name__ == '__main__':
-
     app.run(debug=True)
+

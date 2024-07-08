@@ -4,7 +4,6 @@ from flask_restful import Api, Resource
 from schemas import WalletContractSchema, WalletSchema, WalletCreateDtoSchema, WalletWithdrawDtoSchema
 from models import Wallet, Permiso, WalletContract
 from db import db
-from services import WalletService
 
 #serializers
 walletcontract_serializer = WalletContractSchema()
@@ -167,10 +166,11 @@ class WalletWithdraw(Resource):
         try:
             data = request.get_json()
             record_dict = self._serializer.load(data)
-            s = WalletService()
-            s.send_withdraw_queue(data)
+            #s = WalletService()
+            #s.send_withdraw_queue(data)
             return data, 200
         except Exception as e:
             return {"message": e}, 500
+
 
 api.add_resource(WalletWithdraw, '/app-core/v1/wallets/withdraw', endpoint='wallets_withdraw_resource')
