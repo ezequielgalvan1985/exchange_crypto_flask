@@ -70,3 +70,13 @@ class WalletWithdrawDtoSchema(ma.Schema):
     to = fields.String()
 
 
+
+class TransactionSchema(ma.Schema):
+    id              = fields.Integer(dump_only=True)
+    nature          = fields.Integer()
+    tx_hash         = fields.String()
+    amount          = fields.Float()
+    to              = fields.String()
+    confirmations   = fields.Integer()
+    status          = fields.String()
+    wallet          = ma.Nested(WalletSchema, many=False)

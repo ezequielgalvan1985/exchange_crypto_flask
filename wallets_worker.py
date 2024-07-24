@@ -4,15 +4,15 @@ from datetime import timedelta, time
 
 import pika
 import json
-
 from models import WalletContract
-from schemas import WalletContractSchema
 from flask import Flask, request
 from db import db
 
 app = Flask(__name__)
 
-
+#
+# Configuracion de la aplicacion FLASK
+#
 SECRET_KEY = '123447a47f563e90fe2db0f56b1b17be62378e31b7cfd3adc776c59ca4c75e2fc512c15f69bb38307d11d5d17a41a7936789'
 PROPAGATE_EXCEPTIONS = True
 SQLALCHEMY_DATABASE_URI = 'sqlite:///project.db'
@@ -28,37 +28,18 @@ app.config['ERROR_404_HELP'] = ERROR_404_HELP
 
 db.init_app(app)
 
-
-
-
-#funcion de testo
-
-@app.route('/workers/wallets-queue', methods=['POST'])
-def test_wallets_queue():
-    try:
-        json_string = json.dumps(request.get_json())
-        json_byte = json_string.encode('utf-8')
-
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        channel = connection.channel()
-        queue_name = 'wallets_queue'
-        channel.queue_declare(queue=queue_name, durable=True)
-
-        channel.basic_publish(exchange='',
-                              routing_key='wallets_queue',
-                              body=json_byte)
-        return {"data":json_string}
-    except Exception as e:
-        app.logger.error(e)
-
-
-
-
 '''
 el generador de wallets "generator-wallets.js, crea una wallet en  la blockchain 
 y guarda en la cola wallets_queue
 wallets_worker.py > escuchando la cola wallets_queue y guarda el registro en la tabla walletContract
 '''
+
+
+#
+# Funcionalidad del worker
+#
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+channel = connection.channel()
 
 def on_message_callback(ch, method, properties, body):
     with app.app_context():
@@ -78,8 +59,6 @@ def on_message_callback(ch, method, properties, body):
             app.logger.error(e)
 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-channel = connection.channel()
 def worker():
     queue_name = 'wallets_queue'
     channel.queue_declare(queue=queue_name, durable=True)
@@ -88,6 +67,11 @@ def worker():
     channel.start_consuming()
 
 
+
+
+#
+# metodos de la api
+#
 @app.route('/workers/iniciar', methods=['POST'])
 def worker_iniciar():
     try:
@@ -108,6 +92,26 @@ def worker_detener():
     except Exception as e:
         app.logger.error(e)
 
+
+@app.route('/workers/test', methods=['POST'])
+def test_wallets_queue():
+    try:
+        json_string = json.dumps(request.get_json())
+        json_byte = json_string.encode('utf-8')
+
+        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+        channel = connection.channel()
+        queue_name = 'wallets_queue'
+        channel.queue_declare(queue=queue_name, durable=True)
+
+        channel.basic_publish(exchange='',
+                              routing_key='wallets_queue',
+                              body=json_byte)
+        return {"data":json_string}
+    except Exception as e:
+        app.logger.error(e)
+
+
+new_t = threading.Thread(target=worker, name="worker")
 if __name__ == '__main__':
-    new_t = threading.Thread(target=worker, name="worker")
     app.run(host="127.0.0.1", port=3000,debug=True)

@@ -4,8 +4,7 @@ from flask import request, jsonify
 from flask_restful import Api, abort
 from werkzeug.security import check_password_hash
 from extensiones import ma, migrate
-from models import User, RolPermiso, UserProfile
-from db import db
+from models import User, RolPermiso, UserProfile, db
 from resources import  controllers_blueprint
 from schemas import UserSchemaDto, RolPermisoSchema, UserSchema, UserProfileSchema
 from flask import Flask

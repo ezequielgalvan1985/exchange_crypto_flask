@@ -1,9 +1,10 @@
+from datetime import date
 from flask import request, Blueprint, abort, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restful import Api, Resource
-from schemas import WalletContractSchema, WalletSchema, WalletCreateDtoSchema, WalletWithdrawDtoSchema
-from models import Wallet, Permiso, WalletContract
-from db import db
+from schemas import WalletContractSchema, WalletSchema, WalletCreateDtoSchema, WalletWithdrawDtoSchema, \
+    TransactionSchema
+from models import Wallet, Permiso, WalletContract, db, Transaction
 
 #serializers
 walletcontract_serializer = WalletContractSchema()
@@ -172,5 +173,78 @@ class WalletWithdraw(Resource):
         except Exception as e:
             return {"message": e}, 500
 
-
 api.add_resource(WalletWithdraw, '/app-core/v1/wallets/withdraw', endpoint='wallets_withdraw_resource')
+
+
+
+class TransactionListResource(Resource):
+    _serializer = TransactionSchema()
+    def get(self):
+        rows = db.session.execute(db.select(Transaction)).scalars()
+        result = self._serializer.dump(rows, many=True)
+        return result
+
+
+    def post(self):
+        data                = request.get_json()
+        record_dict         = self._serializer.load(data)
+        m                   = Transaction()
+        m.tx_hash           = record_dict['tx_hash']
+        m.nature            = record_dict['nature']
+        m.amount            = record_dict['amount']
+        m.to                = record_dict['to']
+        m.confirmations     = record_dict['confirmations']
+        m.status            = record_dict['status']
+        m.created_at        = date.today()
+        '''
+        w = Wallet.query.filter_by(chain_id=d['chain_id'],
+                                   address=d['wallet_address'],
+                                   coin=d['coin']).first()
+        
+        #m.wallet            = record_dict['wallet']['id']
+        '''
+
+        m.save()
+        resp = self._serializer.dump(m)
+        return resp, 201
+
+
+class TransactionResource(Resource):
+    _serializer = TransactionSchema()
+    def get(self, id):
+        r = Transaction.get_by_id(id)
+        if r is None:
+            return {"mensaje": "registro no existe"}, 404
+        resp = self._serializer.dump(r)
+        return resp
+
+    #@jwt_required()
+    def delete(self, id):
+        r = Transaction.get_by_id(id)
+        if r is None:
+            return {"mensaje": "registro no existe"}, 404
+        db.session.delete(r)
+        db.session.commit()
+        return {"mensaje": "registro eliminado"}, 204
+
+    #@jwt_required()
+    def put(self, id):
+        m = Transaction.get_by_id(id)
+        if m is None:
+            return {"message": "No se encontro Id", "data": id}, 404
+        data = request.get_json()
+        record_dict = self._serializer.load(data)
+        m.tx_hash = record_dict['tx_hash']
+        m.nature = record_dict['nature']
+        m.amount = record_dict['amount']
+        m.to = record_dict['to']
+        m.confirmations = record_dict['confirmations']
+        m.status = record_dict['status']
+        m.created_at = date.today()
+        m.save()
+        resp = self._serializer.dump(m)
+        return {"message": "Actualizado Ok", "data": resp}, 200
+
+
+api.add_resource(TransactionListResource, '/app-core/v1/transaction',endpoint='transaction_list_resource')
+api.add_resource(TransactionResource, '/app-core/v1/transaction/<int:id>', endpoint='transaction_resource')
